@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/lnk00/prosp/parser"
+	"github.com/lnk00/prosp/models"
 )
 
 type model struct {
@@ -48,12 +48,13 @@ var baseStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.NormalBorder()).
 	BorderForeground(lipgloss.Color("240"))
 
-func buildTable(jobs []parser.Job) ([]table.Column, []table.Row) {
+func buildTable(jobs []models.Job) ([]table.Column, []table.Row) {
 	rows := []table.Row{}
 	columns := []table.Column{
 		{Title: "Id", Width: 4},
 		{Title: "Title", Width: 50},
 		{Title: "Location", Width: 100},
+		{Title: "Link", Width: 100},
 	}
 
 	for id, job := range jobs {
@@ -61,13 +62,14 @@ func buildTable(jobs []parser.Job) ([]table.Column, []table.Row) {
 			strconv.Itoa(id),
 			job.Title,
 			job.Location,
+			job.Link,
 		})
 	}
 
 	return columns, rows
 }
 
-func Render(jobs []parser.Job) {
+func Render(jobs []models.Job) {
 	columns, rows := buildTable(jobs)
 
 	t := table.New(

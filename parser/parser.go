@@ -3,21 +3,18 @@ package parser
 import (
 	"io"
 	"log"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/lnk00/prosp/models"
 )
-
-type Job struct {
-	Title    string
-	Location string
-}
 
 var jobSelector = "body > table > tbody > tr:nth-child(2) > td > div > table > tbody > tr > td > table > tbody > tr > td > table > tbody > tr > td > table > tbody > tr > td:nth-child(2) > a"
 var titleSelector = "table > tbody > tr:nth-child(1) > td > a"
 var locationSelector = "table > tbody > tr:nth-child(2) > td > p"
 
-func Parse(msg io.Reader) []Job {
-	res := []Job{}
+func Parse(msg io.Reader) []models.Job {
+	res := []models.Job{}
 
 	doc, err := goquery.NewDocumentFromReader(msg)
 	if err != nil {
@@ -27,15 +24,17 @@ func Parse(msg io.Reader) []Job {
 	jobs := doc.Find(jobSelector)
 	jobs.Each(func(_ int, s *goquery.Selection) {
 		title := s.Find(titleSelector).Text()
+		link := s.Find(titleSelector).AttrOr("href", "link not found")
+		link = strings.Split(link, "?")[0]
 		location := s.Find(locationSelector).Text()
-		res = append(res, Job{Title: title, Location: location})
+		res = append(res, models.Job{Title: title, Location: location, Link: link})
 	})
 
 	return res
 }
 
-func ParseAll(messages []io.Reader) []Job {
-	res := []Job{}
+func ParseAll(messages []io.Reader) []models.Job {
+	res := []models.Job{}
 
 	for _, msg := range messages {
 		jobs := Parse(msg)
