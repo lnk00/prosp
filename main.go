@@ -5,6 +5,7 @@ import (
 
 	"github.com/lnk00/prosp/imap"
 	"github.com/lnk00/prosp/parser"
+	"github.com/lnk00/prosp/tui"
 	"github.com/spf13/viper"
 )
 
@@ -20,7 +21,7 @@ func main() {
 	imap.Login()
 	messages := imap.FetchFrom("jobalerts-noreply@linkedin.com")
 	jobs := parser.ParseAll(messages)
-	log.Println(jobs)
+	tui.Render(jobs)
 	imap.Logout()
 
 }

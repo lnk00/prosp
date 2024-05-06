@@ -8,8 +8,8 @@ import (
 )
 
 type Job struct {
-	title    string
-	location string
+	Title    string
+	Location string
 }
 
 var jobSelector = "body > table > tbody > tr:nth-child(2) > td > div > table > tbody > tr > td > table > tbody > tr > td > table > tbody > tr > td > table > tbody > tr > td:nth-child(2) > a"
@@ -28,7 +28,7 @@ func Parse(msg io.Reader) []Job {
 	jobs.Each(func(_ int, s *goquery.Selection) {
 		title := s.Find(titleSelector).Text()
 		location := s.Find(locationSelector).Text()
-		res = append(res, Job{title: title, location: location})
+		res = append(res, Job{Title: title, Location: location})
 	})
 
 	return res
