@@ -28,20 +28,37 @@ func New() Database {
 	}
 }
 
-func (db Database) GetJobs() {
+func (db Database) GetJobs() []models.Job {
+	jobs := []models.Job{}
+
 	db.Client.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("jobs"))
 		bucket.ForEach(func(k, v []byte) error {
-			log.Printf("Key: %s\tvalue: %s", k, v)
+			var job models.Job
+			err := json.Unmarshal(v, &job)
+			if err != nil {
+				log.Fatalf("failed to decode job data: %v", err)
+			}
+
+			jobs = append(jobs, job)
+
 			return nil
 		})
 		return nil
 	})
+
+	return jobs
 }
 
 func (db Database) SaveJob(job models.Job) {
 	db.Client.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("jobs"))
+
+		value := bucket.Get([]byte(job.Link))
+		if value != nil {
+			return nil
+		}
+
 		encoded, err := json.Marshal(job)
 		if err != nil {
 			log.Printf("failed to encode job data: %v", err)

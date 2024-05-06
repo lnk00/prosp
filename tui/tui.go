@@ -53,8 +53,9 @@ func buildTable(jobs []models.Job) ([]table.Column, []table.Row) {
 	columns := []table.Column{
 		{Title: "Id", Width: 4},
 		{Title: "Title", Width: 50},
-		{Title: "Location", Width: 100},
-		{Title: "Link", Width: 100},
+		{Title: "Location", Width: 50},
+		{Title: "Link", Width: 50},
+		{Title: "Status", Width: 10},
 	}
 
 	for id, job := range jobs {
@@ -63,6 +64,7 @@ func buildTable(jobs []models.Job) ([]table.Column, []table.Row) {
 			job.Title,
 			job.Location,
 			job.Link,
+			string(job.Status),
 		})
 	}
 
@@ -91,7 +93,7 @@ func Render(jobs []models.Job) {
 		Bold(false)
 	t.SetStyles(s)
 	m := model{t}
-	if _, err := tea.NewProgram(m).Run(); err != nil {
+	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		log.Println("Error running program:", err)
 		os.Exit(1)
 	}

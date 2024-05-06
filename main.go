@@ -23,11 +23,12 @@ func main() {
 	imap := imap.New()
 	imap.Login()
 	messages := imap.FetchFrom("jobalerts-noreply@linkedin.com")
+
 	jobs := parser.ParseAll(messages)
 	db.SaveAllJobs(jobs)
-	db.GetJobs()
 
-	tui.Render(jobs)
+	tui.Render(db.GetJobs())
+
 	imap.Logout()
 
 }

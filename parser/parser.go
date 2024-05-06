@@ -27,7 +27,12 @@ func Parse(msg io.Reader) []models.Job {
 		link := s.Find(titleSelector).AttrOr("href", "link not found")
 		link = strings.Split(link, "?")[0]
 		location := s.Find(locationSelector).Text()
-		res = append(res, models.Job{Title: title, Location: location, Link: link})
+		res = append(res, models.Job{
+			Title:    title,
+			Location: location,
+			Link:     link,
+			Status:   models.TO_APPLY,
+		})
 	})
 
 	return res
