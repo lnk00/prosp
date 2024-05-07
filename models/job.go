@@ -10,9 +10,9 @@ type Job struct {
 type JobStatus string
 
 const (
-	TO_APPLY     JobStatus = "TO_APPLY"
-	APPLIED      JobStatus = "APPLIED"
-	INTERVIEWING JobStatus = "INTERVIEWING"
-	REJECTED     JobStatus = "REJECTED"
-	SUCCEED      JobStatus = "SUCCEED"
+	TO_APPLY     JobStatus = "🔵 TO_APPLY"
+	APPLIED      JobStatus = "🟡 APPLIED"
+	INTERVIEWING JobStatus = "🟠 INTERVIEWING"
+	REJECTED     JobStatus = "🔴 REJECTED"
+	SUCCEED      JobStatus = "🟢 SUCCEED"
 )

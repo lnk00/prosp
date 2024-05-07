@@ -54,7 +54,7 @@ func buildTable(jobs []models.Job) ([]table.Column, []table.Row) {
 		{Title: "Title", Width: 50},
 		{Title: "Location", Width: 50},
 		{Title: "Link", Width: 50},
-		{Title: "Status", Width: 10},
+		{Title: "Status", Width: 20},
 	}
 
 	for id, job := range jobs {
