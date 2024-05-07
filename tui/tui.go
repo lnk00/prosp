@@ -4,6 +4,8 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -11,6 +13,8 @@ import (
 )
 
 type model struct {
+	keys  keyMap
+	help  help.Model
 	table table.Model
 }
 
@@ -19,18 +23,14 @@ func (m model) Init() tea.Cmd { return nil }
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.help.Width = msg.Width
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "esc":
-			if m.table.Focused() {
-				m.table.Blur()
-			} else {
-				m.table.Focus()
-			}
-		case "q", "ctrl+c":
+		switch {
+		case key.Matches(msg, m.keys.Help):
+			m.help.ShowAll = !m.help.ShowAll
+		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
-		case "enter":
-			m.table.SetRows(append(m.table.Rows(), table.Row{"100", "Damien", "dumontet", "dsds", "dsdsd"}))
 		}
 	}
 	m.table, cmd = m.table.Update(msg)
@@ -38,7 +38,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	return baseStyle.Render(m.table.View()) + "\n"
+	tableView := baseStyle.Render(m.table.View())
+	helpView := m.help.View(m.keys)
+	return tableView + "\n" + helpView + "\n"
 }
 
 var baseStyle = lipgloss.NewStyle().
@@ -89,7 +91,7 @@ func Render(jobs []models.Job) {
 		Background(lipgloss.Color("57")).
 		Bold(false)
 	t.SetStyles(s)
-	m := model{t}
+	m := model{keys, help.New(), t}
 	_, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
 	if err != nil {
 		log.Fatalf("failed to render: %v", err)
