@@ -2,7 +2,6 @@ package tui
 
 import (
 	"log"
-	"os"
 	"strconv"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -31,9 +30,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "enter":
-			return m, tea.Batch(
-				tea.Printf("Let's go to %s!", m.table.SelectedRow()[1]),
-			)
+			m.table.SetRows(append(m.table.Rows(), table.Row{"100", "Damien", "dumontet", "dsds", "dsdsd"}))
 		}
 	}
 	m.table, cmd = m.table.Update(msg)
@@ -93,9 +90,9 @@ func Render(jobs []models.Job) {
 		Bold(false)
 	t.SetStyles(s)
 	m := model{t}
-	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
-		log.Println("Error running program:", err)
-		os.Exit(1)
+	_, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
+	if err != nil {
+		log.Fatalf("failed to render: %v", err)
 	}
 
 }
