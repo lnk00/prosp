@@ -100,7 +100,7 @@ func Render(db db.Database) {
 		table.WithColumns(columns),
 		table.WithRows(rows),
 		table.WithFocused(true),
-		table.WithHeight(10),
+		table.WithHeight(40),
 	)
 
 	s := table.DefaultStyles()
