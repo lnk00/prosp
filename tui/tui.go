@@ -21,54 +21,23 @@ type model struct {
 	db    db.Database
 }
 
-func findIndex(slice []models.JobStatus, element models.JobStatus) int {
-	for index, value := range slice {
-		if value == element {
-			return index
-		}
-	}
-	return -1
-}
-
-func getNextStatus(status models.JobStatus) models.JobStatus {
-	statusOrderSlice := []models.JobStatus{
-		models.TO_APPLY,
-		models.APPLIED,
-		models.INTERVIEWING,
-		models.SUCCEED,
-		models.REJECTED,
-	}
-
-	idx := findIndex(statusOrderSlice, status)
-
-	if idx+1 < len(statusOrderSlice) {
-		return statusOrderSlice[idx+1]
-	} else {
-		return statusOrderSlice[0]
-	}
-
-}
-
-func getPrevStatus(status models.JobStatus) models.JobStatus {
-	statusOrderSlice := []models.JobStatus{
-		models.TO_APPLY,
-		models.APPLIED,
-		models.INTERVIEWING,
-		models.SUCCEED,
-		models.REJECTED,
-	}
-
-	idx := findIndex(statusOrderSlice, status)
-
-	if idx > 0 {
-		return statusOrderSlice[idx-1]
-	} else {
-		return statusOrderSlice[len(statusOrderSlice)-1]
-	}
-
-}
-
 func (m model) Init() tea.Cmd { return nil }
+
+func (m *model) UpdatePrevJobStatus() {
+	idx := m.table.Cursor()
+	rows := m.table.Rows()
+	rows[idx][4] = string(models.JobStatus(rows[idx][4]).GetPrevStatus())
+	m.db.UpdateJobStatus(rows[idx][3], models.JobStatus(rows[idx][4]))
+	m.table.SetRows(rows)
+}
+
+func (m *model) UpdateNextJobStatus() {
+	idx := m.table.Cursor()
+	rows := m.table.Rows()
+	rows[idx][4] = string(models.JobStatus(rows[idx][4]).GetNextStatus())
+	m.db.UpdateJobStatus(rows[idx][3], models.JobStatus(rows[idx][4]))
+	m.table.SetRows(rows)
+}
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
@@ -80,17 +49,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 		case key.Matches(msg, m.keys.Left):
-			idx := m.table.Cursor()
-			rows := m.table.Rows()
-			rows[idx][4] = string(getPrevStatus(models.JobStatus(rows[idx][4])))
-			m.db.UpdateJobStatus(rows[idx][3], models.JobStatus(rows[idx][4]))
-			m.table.SetRows(rows)
+			m.UpdatePrevJobStatus()
 		case key.Matches(msg, m.keys.Right):
-			idx := m.table.Cursor()
-			rows := m.table.Rows()
-			rows[idx][4] = string(getNextStatus(models.JobStatus(rows[idx][4])))
-			m.db.UpdateJobStatus(rows[idx][3], models.JobStatus(rows[idx][4]))
-			m.table.SetRows(rows)
+			m.UpdateNextJobStatus()
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
 		}
