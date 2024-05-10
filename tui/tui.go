@@ -4,6 +4,8 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/lnk00/prosp/db"
+
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
@@ -16,6 +18,54 @@ type model struct {
 	keys  keyMap
 	help  help.Model
 	table table.Model
+	db    db.Database
+}
+
+func findIndex(slice []models.JobStatus, element models.JobStatus) int {
+	for index, value := range slice {
+		if value == element {
+			return index
+		}
+	}
+	return -1
+}
+
+func getNextStatus(status models.JobStatus) models.JobStatus {
+	statusOrderSlice := []models.JobStatus{
+		models.TO_APPLY,
+		models.APPLIED,
+		models.INTERVIEWING,
+		models.SUCCEED,
+		models.REJECTED,
+	}
+
+	idx := findIndex(statusOrderSlice, status)
+
+	if idx+1 < len(statusOrderSlice) {
+		return statusOrderSlice[idx+1]
+	} else {
+		return statusOrderSlice[0]
+	}
+
+}
+
+func getPrevStatus(status models.JobStatus) models.JobStatus {
+	statusOrderSlice := []models.JobStatus{
+		models.TO_APPLY,
+		models.APPLIED,
+		models.INTERVIEWING,
+		models.SUCCEED,
+		models.REJECTED,
+	}
+
+	idx := findIndex(statusOrderSlice, status)
+
+	if idx > 0 {
+		return statusOrderSlice[idx-1]
+	} else {
+		return statusOrderSlice[len(statusOrderSlice)-1]
+	}
+
 }
 
 func (m model) Init() tea.Cmd { return nil }
@@ -29,6 +79,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
+		case key.Matches(msg, m.keys.Left):
+			idx := m.table.Cursor()
+			rows := m.table.Rows()
+			rows[idx][4] = string(getPrevStatus(models.JobStatus(rows[idx][4])))
+			m.db.UpdateJobStatus(rows[idx][3], models.JobStatus(rows[idx][4]))
+			m.table.SetRows(rows)
+		case key.Matches(msg, m.keys.Right):
+			idx := m.table.Cursor()
+			rows := m.table.Rows()
+			rows[idx][4] = string(getNextStatus(models.JobStatus(rows[idx][4])))
+			m.db.UpdateJobStatus(rows[idx][3], models.JobStatus(rows[idx][4]))
+			m.table.SetRows(rows)
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
 		}
@@ -70,8 +132,8 @@ func buildTable(jobs []models.Job) ([]table.Column, []table.Row) {
 	return columns, rows
 }
 
-func Render(jobs []models.Job) {
-	columns, rows := buildTable(jobs)
+func Render(db db.Database) {
+	columns, rows := buildTable(db.GetJobs())
 
 	t := table.New(
 		table.WithColumns(columns),
@@ -91,7 +153,7 @@ func Render(jobs []models.Job) {
 		Background(lipgloss.Color("57")).
 		Bold(false)
 	t.SetStyles(s)
-	m := model{keys, help.New(), t}
+	m := model{keys, help.New(), t, db}
 	_, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
 	if err != nil {
 		log.Fatalf("failed to render: %v", err)

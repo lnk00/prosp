@@ -73,3 +73,27 @@ func (db Database) SaveAllJobs(jobs []models.Job) {
 		db.SaveJob(job)
 	}
 }
+
+func (db Database) UpdateJobStatus(link string, status models.JobStatus) {
+	db.Client.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte("jobs"))
+
+		value := bucket.Get([]byte(link))
+
+		var job models.Job
+		err := json.Unmarshal(value, &job)
+		if err != nil {
+			log.Printf("failed to decode job data: %v", err)
+		}
+
+		job.Status = status
+
+		encoded, err := json.Marshal(job)
+		if err != nil {
+			log.Printf("failed to encode job data: %v", err)
+		}
+
+		bucket.Put([]byte(job.Link), encoded)
+		return nil
+	})
+}

@@ -18,16 +18,16 @@ func main() {
 		log.Fatalf("fatal error config file: %v", err)
 	}
 
-	db := db.New()
+	database := db.New()
 
 	imap := imap.New()
 	imap.Login()
 	messages := imap.FetchFrom("jobalerts-noreply@linkedin.com")
 
 	jobs := parser.ParseAll(messages)
-	db.SaveAllJobs(jobs)
+	database.SaveAllJobs(jobs)
 
-	tui.Render(db.GetJobs())
+	tui.Render(database)
 
 	imap.Logout()
 
