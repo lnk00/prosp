@@ -9,17 +9,12 @@ import (
 	"github.com/lnk00/prosp/models"
 )
 
-var jobSelector = "body > table > tbody > tr:nth-child(2) > td > div > table > tbody > tr > td > table > tbody > tr > td > table > tbody > tr > td > table > tbody > tr > td:nth-child(2) > a"
-var titleSelector = "table > tbody > tr:nth-child(1) > td > a"
-var locationSelector = "table > tbody > tr:nth-child(2) > td > p"
+func linkedinParse(doc *goquery.Document) []models.Job {
+	list := []models.Job{}
 
-func Parse(msg io.Reader) []models.Job {
-	res := []models.Job{}
-
-	doc, err := goquery.NewDocumentFromReader(msg)
-	if err != nil {
-		log.Fatalf("PARSING failed: %v", err)
-	}
+	var jobSelector = "body > table > tbody > tr:nth-child(2) > td > div > table > tbody > tr > td > table > tbody > tr > td > table > tbody > tr > td > table > tbody > tr > td:nth-child(2) > a"
+	var titleSelector = "table > tbody > tr:nth-child(1) > td > a"
+	var locationSelector = "table > tbody > tr:nth-child(2) > td > p"
 
 	jobs := doc.Find(jobSelector)
 	jobs.Each(func(_ int, s *goquery.Selection) {
@@ -27,7 +22,7 @@ func Parse(msg io.Reader) []models.Job {
 		link := s.Find(titleSelector).AttrOr("href", "link not found")
 		link = strings.Split(link, "?")[0]
 		location := s.Find(locationSelector).Text()
-		res = append(res, models.Job{
+		list = append(list, models.Job{
 			Title:    title,
 			Location: location,
 			Link:     link,
@@ -35,7 +30,19 @@ func Parse(msg io.Reader) []models.Job {
 		})
 	})
 
-	return res
+	return list
+}
+
+func Parse(msg io.Reader) []models.Job {
+
+	doc, err := goquery.NewDocumentFromReader(msg)
+	if err != nil {
+		log.Fatalf("PARSING failed: %v", err)
+	}
+
+	list := linkedinParse(doc)
+
+	return list
 }
 
 func ParseAll(messages []io.Reader) []models.Job {
