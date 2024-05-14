@@ -45,11 +45,11 @@ func Parse(msg io.Reader) []models.Job {
 	return list
 }
 
-func ParseAll(messages []io.Reader) []models.Job {
+func ParseAll(messages []models.Message) []models.Job {
 	res := []models.Job{}
 
 	for _, msg := range messages {
-		jobs := Parse(msg)
+		jobs := Parse(msg.Reader)
 		res = append(res, jobs...)
 	}
 

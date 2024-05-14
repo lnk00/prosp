@@ -1,13 +1,13 @@
 package imap
 
 import (
-	"io"
 	"log"
 	"mime/quotedprintable"
 	"strings"
 
 	"github.com/emersion/go-imap/v2"
 	"github.com/emersion/go-imap/v2/imapclient"
+	"github.com/lnk00/prosp/models"
 	"github.com/spf13/viper"
 )
 
@@ -51,8 +51,8 @@ func (I Imap) Logout() {
 	I.Client.Close()
 }
 
-func (I Imap) FetchFrom(email string) []io.Reader {
-	parsedMessages := []io.Reader{}
+func (I Imap) FetchFrom(email string) []models.Message {
+	messageList := []models.Message{}
 
 	I.Client.Select("INBOX", nil).Wait()
 
@@ -84,9 +84,12 @@ func (I Imap) FetchFrom(email string) []io.Reader {
 			break
 		}
 
-		parsedMessages = append(parsedMessages, quotedprintable.NewReader(strings.NewReader(string(body))))
+		messageList = append(messageList, models.Message{
+			Date:   msg.Envelope.Date,
+			Reader: quotedprintable.NewReader(strings.NewReader(string(body))),
+		})
 	}
 
-	return parsedMessages
+	return messageList
 
 }
