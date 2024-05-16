@@ -49,5 +49,6 @@ require (
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/emersion/go-message v0.18.1 // indirect
 	github.com/emersion/go-sasl v0.0.0-20231106173351-e73c9f7bad43 // indirect
+	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/spf13/viper v1.18.2
 )

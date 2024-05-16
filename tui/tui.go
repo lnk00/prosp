@@ -12,6 +12,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/lnk00/prosp/models"
+	"github.com/pkg/browser"
 )
 
 type model struct {
@@ -39,6 +40,12 @@ func (m *model) UpdateNextJobStatus() {
 	m.table.SetRows(rows)
 }
 
+func (m model) OpenUrl() {
+	idx := m.table.Cursor()
+	rows := m.table.Rows()
+	browser.OpenURL(rows[idx][4])
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
@@ -52,6 +59,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.UpdatePrevJobStatus()
 		case key.Matches(msg, m.keys.Right):
 			m.UpdateNextJobStatus()
+		case key.Matches(msg, m.keys.Return):
+			m.OpenUrl()
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
 		}
@@ -76,8 +85,8 @@ func buildTable(jobs []models.Job) ([]table.Column, []table.Row) {
 		{Title: "Id", Width: 4},
 		{Title: "Title", Width: 50},
 		{Title: "Location", Width: 50},
-		{Title: "Link", Width: 50},
 		{Title: "Status", Width: 20},
+		{Title: "Link", Width: 50},
 	}
 
 	for id, job := range jobs {
@@ -85,8 +94,8 @@ func buildTable(jobs []models.Job) ([]table.Column, []table.Row) {
 			strconv.Itoa(id),
 			job.Title,
 			job.Location,
-			job.Link,
 			string(job.Status),
+			job.Link,
 		})
 	}
 
