@@ -27,16 +27,16 @@ func (m model) Init() tea.Cmd { return nil }
 func (m *model) UpdatePrevJobStatus() {
 	idx := m.table.Cursor()
 	rows := m.table.Rows()
-	rows[idx][4] = string(models.JobStatus(rows[idx][4]).GetPrevStatus())
-	m.db.UpdateJobStatus(rows[idx][3], models.JobStatus(rows[idx][4]))
+	rows[idx][3] = string(models.JobStatus(rows[idx][3]).GetPrevStatus())
+	m.db.UpdateJobStatus(rows[idx][4], models.JobStatus(rows[idx][3]))
 	m.table.SetRows(rows)
 }
 
 func (m *model) UpdateNextJobStatus() {
 	idx := m.table.Cursor()
 	rows := m.table.Rows()
-	rows[idx][4] = string(models.JobStatus(rows[idx][4]).GetNextStatus())
-	m.db.UpdateJobStatus(rows[idx][3], models.JobStatus(rows[idx][4]))
+	rows[idx][3] = string(models.JobStatus(rows[idx][3]).GetNextStatus())
+	m.db.UpdateJobStatus(rows[idx][4], models.JobStatus(rows[idx][3]))
 	m.table.SetRows(rows)
 }
 

@@ -60,10 +60,12 @@ func (I Imap) FetchFrom(email string) []models.Message {
 		Header: []imap.SearchCriteriaHeaderField{{Key: "FROM", Value: email}},
 	}, nil).Wait()
 	if err != nil {
-		log.Fatalf("UID SEARCH command failed: %v", err)
+		log.Fatalf("FETCH command failed: %v", err)
 	}
 
-	data.AllSeqNums()
+	if len(data.AllUIDs()) == 0 {
+		return messageList
+	}
 
 	fetchOptions := &imap.FetchOptions{
 		Flags:    true,
